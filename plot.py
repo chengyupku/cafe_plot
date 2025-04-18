@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import numpy as np
 import matplotlib.ticker as ticker
-from mircrobenchmark_results import *
+from microbenchmark_results import *
 
 # 柔和淡雅配色方案
 colers_sets = [
@@ -11,9 +11,9 @@ colers_sets = [
     # (255/255, 190/255, 187/255),  # 淡珊瑚粉
     (141/255, 211/255, 199/255),  # 淡青绿
     (190/255, 184/255, 220/255),  # 淡紫色
-    # (128/255, 177/255, 211/255),  # 淡蓝色
     (253/255, 180/255, 98/255),   # 淡橙黄
     (179/255, 222/255, 105/255),  # 淡黄绿
+    (128/255, 177/255, 211/255),  # 淡蓝色
 ]
 
 # ]
@@ -42,7 +42,7 @@ colers_sets = [
 hatch_patterns = ["-", "+", "x", "\\", ".", "o", "O", "*"]
 
 
-fig = plt.figure(figsize=(16, 10))
+fig = plt.figure(figsize=(16, 8))
 
 legend_items = {}
 
@@ -75,7 +75,7 @@ ax1_1.spines["top"].set_visible(True)
 
 times_data = mha_times_data_h100
 providers = mha_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -139,7 +139,7 @@ ax1_2.spines["top"].set_visible(True)
 
 times_data = mha_times_data_mi210
 providers = mha_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -202,7 +202,7 @@ ax2_1.spines["top"].set_visible(True)
 
 times_data = mla_times_data_h100
 providers = mla_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -279,7 +279,7 @@ ax2_2_1.spines["top"].set_visible(False)
 
 times_data = mla_times_data_mi210
 providers = mla_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -379,7 +379,7 @@ ax3_1.spines["top"].set_visible(True)
 
 times_data = gemm_times_data_h100
 providers = gemm_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -443,7 +443,7 @@ ax3_2.spines["top"].set_visible(True)
 
 times_data = gemm_times_data_mi210
 providers = gemm_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -498,36 +498,75 @@ ax3_2.set_xticklabels(providers, fontsize=10)
 
 
 #  Figure 3.1
-ax4_1 = fig.add_subplot(gs[3, 0:12])
-ax4_1.set_title("Dequant GEMM on H100")
-ax4_1.set_ylim(0, 3.5)  # 下面的图为0到5
+#  Figure 4.2
+gs_dg_h100 = gridspec.GridSpecFromSubplotSpec(3, 1, subplot_spec=gs[3, 0:12], hspace=0.25)
+ax4_1_2 = fig.add_subplot(gs_dg_h100[0])
+ax4_1_1 = fig.add_subplot(gs_dg_h100[1:])
 
-ax4_1.spines["top"].set_visible(True)
+# ax4_1_2 = fig.add_subplot(gs[1, 0:24])
+# ax4_1_1 = fig.add_subplot(gs[2, 0:24])
+# 设置两个Y轴的范围
+ax4_1_2.set_ylim(8,20)  # 上面的图为10到最大值
+ax4_1_1.set_ylim(0, 2)  # 下面的图为0到5
+# Draw cublas as a horizontal dashed line
+ax4_1_2.axhline(y=1, color="black", linestyle="dashed")
+ax4_1_2.axhline(y=1, color="black", linestyle="dashed")
+ax4_1_2.spines["bottom"].set_visible(False)
+ax4_1_2.set_xticklabels([])
+ax4_1_2.set_xticks([])
+ax4_1_2.set_title("Dequant GEMM on H100")
+
+ax4_1_1.spines["top"].set_visible(False)
 
 times_data = dequant_gemm_times_data_h100
 providers = dequant_gemm_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
 for label, times in times_data:
+    # if label != _1x_baseline:
     norm_time = [
         t / p_i if p_i != 0 else 0 for p_i, t in zip(_1x_baseline_times, times)
     ]
     norm_time_data.append((label, norm_time))
+print(norm_time_data)
+# Plotting
+# fig, ax = plt.subplots(figsize=(6, 2))
 
+# max_speedup = np.ceil(max([max(speedup) for _, speedup in speed_up_data]))
+
+print(norm_time_data)
+# Create an array for x-axis positions
 x = np.arange(len(providers))
 
+# Set the width of the bars
 bar_width =0.2
 
-ax4_1.axhline(y=1, color="black", linestyle="dashed")
+# Draw cublas as a horizontal dashed line
+ax4_1_1.axhline(y=1, color="black", linestyle="dashed")
 
+
+# Create bars using a loop
+print(len(x))
+print(len(norm_time_data))
 for i, (label, norm_time) in enumerate(norm_time_data):
     print(label)
     if label not in llm_legands:
         llm_legands.append(label)
+    
+    rec = ax4_1_2.bar(
+        x + i * bar_width,
+        norm_time,
+        bar_width,
+        label=label,
+        linewidth=0.8,
+        edgecolor="black",
+        hatch=get_legend_item(label)[1],
+        color=get_legend_item(label)[0],
+    )
 
-    rec = ax4_1.bar(
+    rec = ax4_1_1.bar(
         x + i * bar_width,
         norm_time,
         bar_width,
@@ -541,7 +580,7 @@ for i, (label, norm_time) in enumerate(norm_time_data):
         height = rect.get_height()
         if height == 0:
             warning_text = f"{label} Failed"
-            ax4_1.text(
+            ax4_1_1.text(
                 rect.get_x() + rect.get_width() / 2 + 0.01,
                 height + 0.05,
                 warning_text,
@@ -553,24 +592,34 @@ for i, (label, norm_time) in enumerate(norm_time_data):
                 weight="bold",
             )
 
-ax4_1.set_xticks(x + len(norm_time_data) * bar_width / 2)
-ax4_1.set_xticklabels(providers, fontsize=10)
-ax4_1.grid(False)
-ax4_1.set_xticks(x + len(norm_time_data) * bar_width / 2)
-ax4_1.set_xticklabels(providers, fontsize=10)
+d = 0.01  # 斜线的长度
+kwargs = dict(transform=ax4_1_2.transAxes, color="k", clip_on=False)
+ax4_1_2.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-left diagonal
+ax4_1_2.plot((-d, +d), (-d, +d), **kwargs)  # top-right diagonal
 
+
+kwargs.update(transform=ax4_1_1.transAxes)  # switch to the bottom axes
+ax4_1_1.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
+ax4_1_1.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
+
+ax4_1_1.set_xticks(x + len(norm_time_data) * bar_width / 2)
+ax4_1_1.set_xticklabels(providers, fontsize=10)
+ax4_1_1.grid(False)
+
+ax4_1_1.set_xticks(x + len(norm_time_data) * bar_width / 2)
+ax4_1_1.set_xticklabels(providers, fontsize=10)
 
 
 #  Figure 3.2
 ax4_2 = fig.add_subplot(gs[3, 12:24])
 ax4_2.set_title("Dequant GEMM on MI210")
-ax4_2.set_ylim(0, 3.5)  # 下面的图为0到5
+ax4_2.set_ylim(0, 1.5)  # 下面的图为0到5
 
 ax4_2.spines["top"].set_visible(True)
 
 times_data = dequant_gemm_times_data_mi210
 providers = dequant_gemm_providers
-_1x_baseline = "Cafe-B1"
+_1x_baseline = "TileSight"
 _1x_baseline_times = dict(times_data)[_1x_baseline]
 
 norm_time_data = []
@@ -631,7 +680,7 @@ handles_other = []
 labels_other = []
 handles_Ladder = []
 labels_Ladder = []
-for ax in [ax1_1, ax1_2, ax2_1, ax2_2_1, ax2_2_2, ax3_1, ax3_2, ax4_1, ax4_2]:
+for ax in [ax1_1, ax1_2, ax2_1, ax2_2_1, ax2_2_2, ax3_1, ax3_2, ax4_1_1, ax4_1_2, ax4_2]:
     handles, labels = ax.get_legend_handles_labels()
     for handle, label in zip(handles, labels):
         if label not in (labels_other + labels_Ladder):
@@ -663,7 +712,7 @@ fig.legend(
 fig.text(
     0.09,
     0.5,
-    "Normalized latency Vs. Cafe (lower is better)",
+    "Normalized latency Vs. TileSight (lower is better)",
     fontsize=15,
     rotation=90,
     va="center",
@@ -673,6 +722,6 @@ plt.subplots_adjust(top=0.9, bottom=0.15, right=0.75)
 # plt.show()
 
 plt.savefig(
-    "./microbenchmark_cafe.pdf",
+    "./microbenchmark_tilesight.pdf",
     bbox_inches="tight",
 )
